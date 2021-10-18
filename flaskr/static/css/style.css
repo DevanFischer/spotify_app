@@ -1,7 +1,7 @@
 body {
   height: 100vh;
   background-attachment: fixed;
-  background: rgb(2, 0, 36);
+  background: grey;
 }
 
 ul {
@@ -21,8 +21,4 @@ li {
   text-decoration-style: none;
   list-style: none;
   cursor: pointer;
-}
-
-h1 {
-  color: white;
 }
