@@ -5,7 +5,27 @@ var artistList = document.querySelector(".artist-ul");
 let submitBtn = document.querySelector(".submit-btn");
 
 submitBtn.addEventListener("click", function () {
+  var songs = artistList.getElementsByTagName("li");
+  const artists = [];
+  for (var i = 0; i < songs.length; ++i) {
+    artists.push(songs[i].innerText);
+  }
   artistList.innerHTML = "";
+  var js_data = JSON.stringify(artists);
+  $.ajax({
+    url: "/getTopSongs",
+    type: "post",
+    contentType: "application/json",
+    dataType: "json",
+    data: js_data,
+  })
+    .done(function (result) {
+      console.log(result);
+      $("#data").html(result);
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+      console.log("fail: ", textStatus, errorThrown);
+    });
 });
 
 enterBtn.addEventListener("click", function () {
@@ -18,7 +38,6 @@ enterBtn.addEventListener("click", function () {
   deleteBtn.setAttribute("onclick", "deleteArtist(this);");
 
   artist.innerText = userInput.value;
-  artist.setAttribute("onclick", "move(this);");
 
   artistDiv.appendChild(artist);
   artistDiv.appendChild(deleteBtn);

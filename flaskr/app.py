@@ -1,10 +1,9 @@
-from flask import Flask, render_template, request, url_for, session, redirect
+from flask import Flask, render_template, request, url_for, session, redirect, jsonify
 from spotipy.oauth2 import SpotifyOAuth
 from dotenv import load_dotenv
 from os import environ
 import spotipy
 import time
-
 
 load_dotenv()  # take environment variables from .env.
 
@@ -18,9 +17,7 @@ app = Flask(__name__)
 app.secret_key = SECRET_KEY
 app.config["SESSION_COOKIE_NAME"] = COOKIE_NAME
 
-
 TOKEN_INFO = "token_info"
-
 
 # AUTH FLOW
 def create_spotify_oauth():
@@ -71,18 +68,30 @@ def connect():
         return spotipy.Spotify(auth=token_info["access_token"])
     except:
         print("User not logged in.")
-        return redirect("/")
+        return redirect("/login")
 
 
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def index():
-    return render_template("createPlaylist.html")
+    if request.method == "POST":
+        data = request.json
+        return jsonify(data)
+    else:
+        return render_template("index.html")
+
+
+@app.route("/listify", methods=["GET", "POST"])
+def listify():
+    if request.method == "POST":
+        data = request.json
+        return jsonify(data)
+    else:
+        return render_template("createPlaylist.html")
 
 
 @app.route("/getTracks")
 def getTracks():
     sp = connect()
-
     all_songs = []
     iter = 0
     while True:
@@ -91,17 +100,12 @@ def getTracks():
         all_songs += items
         if len(items) < 50:
             break
-    return str(len(all_songs))
+    return all_songs
 
 
-@app.route("/create")
+# @app.route("/create")
 def create_playlist(name="New Playlist"):
-    try:
-        token_info = get_token()
-    except:
-        print("User not logged in.")
-        return redirect("/")
-    sp = spotipy.Spotify(auth=token_info["access_token"])
+    sp = connect()
     user_id = sp.me()["id"]
     playlist = sp.user_playlist_create(
         user=user_id,
@@ -116,19 +120,22 @@ def create_playlist(name="New Playlist"):
 
 
 # Get the id of an artist
-@app.route("/getTopSongs")
-def get_artist_id():
-    artist = request.args.get("artist")
+# @app.route("/getTopSongs", methods=["GET", "POST"])
+def get_artist_id(artist):
+    # artist = request.args.get("artist")
     sp = connect()
     response = sp.search(q=artist, limit=10, offset=0, type="artist", market=None)
-    artist_id = response["artists"]["items"][0]["id"]
+    return response["artists"]["items"][0]["id"]
+
+
+def make(artist_id, artist):
     top_tracks = get_top_10(artist_id)
     playlist_id, playlist_url = create_playlist(name=artist)
     add_songs_playlist(playlist_id, top_tracks)
     return playlist_url
 
 
-# Get top 100 songs of artist
+# Get top 50 songs of artist
 def get_top_10(id):
     sp = connect()
     top_tracks = sp.artist_top_tracks(artist_id=id, country="US")
