@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from os import environ
 import spotipy
 import time
+import json
 
 load_dotenv()  # take environment variables from .env.
 
@@ -19,7 +20,7 @@ app.config["SESSION_COOKIE_NAME"] = COOKIE_NAME
 
 TOKEN_INFO = "token_info"
 
-# AUTH FLOW
+
 def create_spotify_oauth():
     return SpotifyOAuth(
         client_id=CLIENT_ID,
@@ -47,7 +48,7 @@ def redirectPage():
     code = request.args.get("code")
     token_info = sp_oauth.get_access_token(code)
     session[TOKEN_INFO] = token_info
-    return redirect(url_for("getTracks", _external=True))
+    return redirect(url_for("index", _external=True))
 
 
 def get_token():
@@ -77,18 +78,27 @@ def index():
         data = request.json
         return jsonify(data)
     else:
-        return render_template("index.html")
-
-
-@app.route("/listify", methods=["GET", "POST"])
-def listify():
-    if request.method == "POST":
-        data = request.json
-        return jsonify(data)
-    else:
         return render_template("createPlaylist.html")
 
 
+@app.route("/created", methods=["GET", "POST"])
+def created():
+    data = request.json
+    print(data)
+    # return jsonify(data)
+    return redirect(url_for("success"))
+
+
+@app.route("/success", methods=["GET", "POST"])
+def success():
+    print("success")
+    # data = request.json
+    # print(data)
+    # return jsonify(data)
+    return render_template("success.html")
+
+
+# Gets the users saved songs
 @app.route("/getTracks")
 def getTracks():
     sp = connect()
@@ -100,7 +110,7 @@ def getTracks():
         all_songs += items
         if len(items) < 50:
             break
-    return all_songs
+    return jsonify(all_songs)
 
 
 # @app.route("/create")
@@ -135,7 +145,7 @@ def make(artist_id, artist):
     return playlist_url
 
 
-# Get top 50 songs of artist
+# Get top 10 songs of artist
 def get_top_10(id):
     sp = connect()
     top_tracks = sp.artist_top_tracks(artist_id=id, country="US")

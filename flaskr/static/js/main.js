@@ -1,47 +1,59 @@
 var userInput = document.querySelector(".user-input");
-let enterBtn = document.querySelector(".enter-btn");
-let removeBtn = document.querySelector(".remove-btn");
-var artistList = document.querySelector(".artist-ul");
-let submitBtn = document.querySelector(".submit-btn");
+var enterBtn = document.querySelector(".enter-btn");
+var removeBtn = document.querySelector(".remove-btn");
+var artistUl = document.querySelector(".artist-ul");
+var submitBtn = document.querySelector(".submit-btn");
 
 submitBtn.addEventListener("click", function () {
-  var songs = artistList.getElementsByTagName("li");
-  const artists = [];
-  for (var i = 0; i < songs.length; ++i) {
-    artists.push(songs[i].innerText);
+  let artistItems = artistUl.getElementsByTagName("li");
+  let artists = [];
+  let url = "/created";
+
+  for (var i = 0; i < artistItems.length; ++i) {
+    artists.push(artistItems[i].innerText);
   }
-  artistList.innerHTML = "";
-  var js_data = JSON.stringify(artists);
-  $.ajax({
-    url: "/getTopSongs",
-    type: "post",
-    contentType: "application/json",
-    dataType: "json",
-    data: js_data,
-  })
-    .done(function (result) {
-      console.log(result);
-      $("#data").html(result);
+
+  var artists_obj = { artists: artists };
+  // console.log(artists_obj);
+
+  const content = {
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(artists_obj),
+    method: "POST",
+  };
+
+  // const URL = "/success";
+  // const xhr = new XMLHttpRequest();
+  // xhr.open("POST", URL);
+  // xhr.send(data);
+  fetch(url, content)
+    .then((data) => {
+      return data.json();
     })
-    .fail(function (jqXHR, textStatus, errorThrown) {
-      console.log("fail: ", textStatus, errorThrown);
+    .then((res) => {
+      console.log(res);
+    })
+    .catch((error) => {
+      console.log(error);
     });
+
+  artistUl.innerHTML = "";
 });
 
 enterBtn.addEventListener("click", function () {
-  var artistDiv = document.createElement("div");
-  var deleteBtn = document.createElement("button");
-  var artist = document.createElement("li");
+  let artistDiv = document.createElement("div");
+  let deleteBtn = document.createElement("button");
+  let artist = document.createElement("li");
+
   artistDiv.classList.add("noselect");
   deleteBtn.classList.add("remove-btn", "close");
   deleteBtn.innerHTML = "&times;";
   deleteBtn.setAttribute("onclick", "deleteArtist(this);");
-
   artist.innerText = userInput.value;
 
   artistDiv.appendChild(artist);
   artistDiv.appendChild(deleteBtn);
-  artistList.appendChild(artistDiv);
+  artistUl.appendChild(artistDiv);
 
   userInput.value = "";
 });
