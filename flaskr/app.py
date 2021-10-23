@@ -113,6 +113,7 @@ def getTracks():
     return jsonify(all_songs)
 
 
+# Create a playlist with `name="name"` and return the id and url.
 # @app.route("/create")
 def create_playlist(name="New Playlist"):
     sp = connect()
@@ -138,14 +139,26 @@ def get_artist_id(artist):
     return response["artists"]["items"][0]["id"]
 
 
-def make(artist_id, artist):
+def main(artist_id, artist):
     top_tracks = get_top_10(artist_id)
     playlist_id, playlist_url = create_playlist(name=artist)
     add_songs_playlist(playlist_id, top_tracks)
     return playlist_url
 
 
-# Get top 10 songs of artist
+# Takes in a list of artists names and creates a playlist of their top ten songs.
+def make_playlist(artists):
+    songs = []
+    for i in artists:
+        top_tracks = get_top_10(artists[i])
+        songs.append(top_tracks)
+
+    playlist_id, playlist_url = create_playlist(name="WICKED 2021")
+    add_songs_playlist(playlist_id, songs)
+    return playlist_url
+
+
+# Takes in an artists id and returns the uri's for their top ten songs.
 def get_top_10(id):
     sp = connect()
     top_tracks = sp.artist_top_tracks(artist_id=id, country="US")
@@ -156,7 +169,7 @@ def get_top_10(id):
     return uris
 
 
-# Add songs to playlist
+# Takes in a playlist id and a list of songs and adds the songs to the playlist.
 def add_songs_playlist(pl_id, songs):
     sp = connect()
     return sp.playlist_add_items(playlist_id=pl_id, items=songs, position=None)

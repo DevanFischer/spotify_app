@@ -21,7 +21,6 @@ submitBtn.addEventListener("click", function () {
     body: JSON.stringify(artists_obj),
     method: "POST",
   };
-
   // const URL = "/success";
   // const xhr = new XMLHttpRequest();
   // xhr.open("POST", URL);
