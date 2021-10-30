@@ -14,17 +14,13 @@ submitBtn.addEventListener("click", function () {
   }
 
   var artists_obj = { artists: artists };
-  // console.log(artists_obj);
 
   const content = {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(artists_obj),
     method: "POST",
   };
-  // const URL = "/success";
-  // const xhr = new XMLHttpRequest();
-  // xhr.open("POST", URL);
-  // xhr.send(data);
+
   fetch(url, content)
     .then((data) => {
       return data.json();
